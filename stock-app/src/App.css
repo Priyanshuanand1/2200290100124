@@ -1,38 +1,119 @@
 .App {
   text-align: center;
+  padding: 20px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.loading-container,
+.error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  min-height: 300px;
+  padding: 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1976d2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  background-color: #fff3f3;
+  border-radius: 8px;
+  padding: 30px;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.retry-button {
+  background-color: #1976d2;
   color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
 }
 
-.App-link {
-  color: #61dafb;
+.retry-button:hover {
+  background-color: #1565c0;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App-header {
+  background-color: #1976d2;
+  padding: 20px;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.stock-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.stock-card:hover {
+  transform: translateY(-5px);
+}
+
+.stock-card h2 {
+  margin: 0 0 10px;
+  color: #1976d2;
+}
+
+.price {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.change {
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.change.positive {
+  color: #4caf50;
+}
+
+.change.negative {
+  color: #f44336;
+}
+
+.volume {
+  color: #666;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.error {
+  color: #f44336;
+  padding: 20px;
+  text-align: center;
+  font-size: 18px;
 }

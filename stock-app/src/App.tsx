@@ -1,32 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Container, AppBar, Toolbar, Typography, Box, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import { StockChart } from './components/StockChart';
 import { CorrelationHeatmap } from './components/CorrelationHeatmap';
 import { api } from './services/api';
+import { useStocks } from './hooks/useStocks';
 
 function App() {
-  const [stocks, setStocks] = useState<{ [key: string]: string }>({});
+  const { stocks, loading, error, retry } = useStocks();
   const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const stocksMap = Object.fromEntries(stocks.map(stock => [stock.symbol, stock.symbol]));
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    const fetchStocks = async () => {
-      try {
-        const stocksData = await api.getStocks();
-        setStocks(stocksData);
-      } catch (error) {
-        console.error('Error fetching stocks:', error);
-        setError('Failed to fetch stocks. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner" />
+        <p>Loading market data...</p>
+      </div>
+    );
+  }
 
-    fetchStocks();
-  }, []);
+  if (error) {
+    return (
+      <div className="error-container">
+        <div className="error-message">{error}</div>
+        <button className="retry-button" onClick={retry}>
+          Retry Loading Data
+        </button>
+      </div>
+    );
+  }
 
   const handleStockChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
@@ -46,8 +48,6 @@ function App() {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {/* Stock Selection */}
           <FormControl sx={{ minWidth: 200 }}>
-            {loading && <Typography>Loading stocks...</Typography>}
-            {error && <Typography color="error">{error}</Typography>}
             <InputLabel id="stock-select-label">Select Stocks</InputLabel>
             <Select
               labelId="stock-select-label"
@@ -57,9 +57,9 @@ function App() {
               onChange={handleStockChange}
               label="Select Stocks"
             >
-              {Object.entries(stocks || {}).map(([name, symbol]) => (
+              {Object.entries(stocksMap).map(([symbol, name]) => (
                 <MenuItem key={symbol} value={symbol}>
-                  {name} ({symbol})
+                  {name}
                 </MenuItem>
               ))}
             </Select>
@@ -68,7 +68,7 @@ function App() {
           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
             {selectedStocks.map(symbol => (
               <Box key={symbol}>
-                <StockChart symbol={symbol} stockName={Object.entries(stocks || {}).find(([_, s]) => s === symbol)?.[0] || symbol} />
+                <StockChart symbol={symbol} stockName={symbol} />
               </Box>
             ))}
           </Box>

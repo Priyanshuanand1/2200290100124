@@ -5,8 +5,10 @@ import { LoadingOverlay } from './LoadingOverlay';
 import { ErrorDisplay } from './ErrorDisplay';
 import { useStockData } from '../hooks/useStockData';
 
+import { StockData } from '../services/stockApi';
+
 interface CorrelationHeatmapProps {
-  stocks: { [key: string]: string };
+  stocks: StockData[];
 }
 
 interface CorrelationData {
@@ -21,7 +23,7 @@ export const CorrelationHeatmap: React.FC<CorrelationHeatmapProps> = ({ stocks }
   const [timeInterval, setTimeInterval] = useState<number>(30);
   const [hoveredStock, setHoveredStock] = useState<string | null>(null);
 
-  const stockSymbols = useMemo(() => Object.values(stocks), [stocks]);
+  const stockSymbols = useMemo(() => stocks.map(stock => stock.symbol), [stocks]);
   
   const fetchStockData = useCallback((interval: number) => {
     return api.getStockPriceHistory(stockSymbols[0], interval);
@@ -155,9 +157,9 @@ export const CorrelationHeatmap: React.FC<CorrelationHeatmapProps> = ({ stocks }
           <Box sx={{ display: 'inline-block', minWidth: 'fit-content' }}>
             {/* Header row with stock symbols */}
             <Box sx={{ display: 'flex', ml: 8 }}>
-              {Object.entries(stocks).map(([name, symbol]) => (
+              {stocks.map((stock) => (
                 <Box
-                  key={symbol}
+                  key={stock.symbol}
                   sx={{
                     width: 60,
                     p: 1,
@@ -167,31 +169,31 @@ export const CorrelationHeatmap: React.FC<CorrelationHeatmapProps> = ({ stocks }
                     whiteSpace: 'nowrap'
                   }}
                 >
-                  <Typography variant="caption">{symbol}</Typography>
+                  <Typography variant="caption">{stock.symbol}</Typography>
                 </Box>
               ))}
             </Box>
 
             {/* Heatmap grid */}
-            {Object.entries(stocks).map(([nameA, symbolA]) => (
+            {stocks.map((stockA) => (
               <Box
-                key={symbolA}
+                key={stockA.symbol}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   '&:hover': { backgroundColor: 'action.hover' }
                 }}
-                onMouseEnter={() => setHoveredStock(symbolA)}
+                onMouseEnter={() => setHoveredStock(stockA.symbol)}
                 onMouseLeave={() => setHoveredStock(null)}
               >
                 <Box sx={{ width: 100, p: 1 }}>
-                  <Typography variant="caption">{symbolA}</Typography>
+                  <Typography variant="caption">{stockA.symbol}</Typography>
                 </Box>
-                {Object.entries(stocks).map(([nameB, symbolB]) => {
-                  const correlation = correlationData[symbolA]?.[symbolB] ?? 0;
+                {stocks.map((stockB) => {
+                  const correlation = correlationData[stockA.symbol]?.[stockB.symbol] ?? 0;
                   return (
                     <Box
-                      key={`${symbolA}-${symbolB}`}
+                      key={`${stockA.symbol}-${stockB.symbol}`}
                       sx={{
                         width: 60,
                         height: 60,
@@ -218,7 +220,7 @@ export const CorrelationHeatmap: React.FC<CorrelationHeatmapProps> = ({ stocks }
         {hoveredStock && correlationData[hoveredStock] && (
           <Box sx={{ mt: 2, p: 1, backgroundColor: 'action.hover' }}>
             <Typography variant="body2">
-              {stocks[hoveredStock]} Statistics:
+              {stocks.find(s => s.symbol === hoveredStock)?.symbol} Statistics:
               Mean: ${correlationData[hoveredStock].mean.toFixed(2)} |
               Std Dev: ${correlationData[hoveredStock].stdDev.toFixed(2)}
             </Typography>
